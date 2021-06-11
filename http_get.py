@@ -38,7 +38,6 @@ while True:
     d = {}
     while True:
         head = f.readline().decode('ASCII')
-        print(head)
         if head == '\r\n':
             break
         dict = head.split(': ')
