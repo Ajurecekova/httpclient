@@ -5,24 +5,22 @@ import re
 import ssl
 
 adresa=sys.argv[1]
-s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-
-obj1 = re.findall('(\w+)://',adresa)
-obj2 = re.findall('://([\w\-\.]+)', adresa)
-obj3 = re.findall('[a-z](\/.*|$)',adresa)
-
-type = obj1[0]
-hostname = obj2[0]
-path = obj3[0]
-
-if type=='https':
-    s.connect((hostname,443))
-    s=ssl.wrap_socket(s)
-elif type=='http':
-    s.connect((hostname,80))
-
 
 while True:
+    s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    obj1 = re.findall('(\w+)://',adresa)
+    obj2 = re.findall('://([\w\-\.]+)', adresa)
+    obj3 = re.findall('[a-z](\/.*|$)',adresa)
+
+    type = obj1[0].strip()
+    hostname = obj2[0].strip()
+    path = obj3[0].strip()
+    if type=='https':
+        s.connect((hostname,443))
+        s=ssl.wrap_socket(s)
+    elif type=='http':
+        s.connect((hostname,80))
+
     f=s.makefile('rwb')
     f.write(('GET ' + path + ' HTTP/1.1\r\n').encode('ASCII'))
     f.write(('Host: ' + hostname + '\r\n').encode('ASCII'))
@@ -45,11 +43,10 @@ while True:
     if status == '200':
         break
     elif status == '301' or status == '302' or status == '303' or status =='307' or status == '308':
-        obj3 = re.findall('[a-z](\/.*|$)',d['location'].strip())
-        path = obj3[0]
+        adresa = d['location']
         f.close()
     else:
-        sys.stderr.write(status + word)
+        sys.stderr.write(status +' '+ word)
         f.close()
         sys.exit(1)
         break
@@ -62,6 +59,8 @@ for i in d.keys():
     elif i == 'transfer-encoding':
         while True:
             number = f.readline().decode('ASCII')
+            if not number:
+                break
             len = int(number,16)
             chunk = f.read(len)
             sys.stdout.buffer.write(chunk)
