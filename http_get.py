@@ -59,11 +59,13 @@ for i in d.keys():
     elif i == 'transfer-encoding':
         while True:
             number = f.readline().decode('ASCII')
+            if not number:
+                break
             len = int(number,16)
             chunk = f.read(len)
-            sys.stdout.buffer.write(chunk)
             if not chunk:
                 break
+            sys.stdout.buffer.write(chunk)
             f.readline()
         break
 f.flush()
